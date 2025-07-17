@@ -3,171 +3,122 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EcoMind 🌍 AI Assistant</title>
+  <title>Eco AI Assistant 🌱</title>
   <style>
     body {
+      font-family: Arial, sans-serif;
+      background: #f1f7f4;
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #0d1117;
-      color: #e0e0e0;
+      padding: 0;
     }
-    header {
-      background-color: #1f6f43;
-      text-align: center;
-      padding: 15px;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 24px;
-    }
-    header p {
-      margin: 5px 0 0;
-      font-size: 14px;
-    }
-    #chat {
-      max-width: 800px;
-      margin: 20px auto;
-      background-color: #161b22;
+
+    .chat-container {
+      max-width: 600px;
+      margin: 60px auto;
       padding: 20px;
-      border-radius: 10px;
-      height: 70vh;
+      background: white;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      border-radius: 12px;
+    }
+
+    .chat-box {
+      height: 400px;
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
+      padding: 10px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+      background: #eafaf1;
+      border-radius: 8px;
     }
+
     .message {
-      margin: 10px 0;
-      max-width: 80%;
-      padding: 10px 15px;
-      border-radius: 15px;
-      line-height: 1.4;
-      word-wrap: break-word;
+      margin-bottom: 10px;
     }
+
     .user {
-      background-color: #238636;
-      color: white;
-      align-self: flex-end;
-      margin-left: auto;
+      text-align: right;
+      color: #2d6a4f;
     }
-    .ai {
-      background-color: #30363d;
-      color: #9ecbff;
-      align-self: flex-start;
-      margin-right: auto;
+
+    .bot {
+      text-align: left;
+      color: #1d3557;
     }
-    #input-box {
-      display: flex;
-      justify-content: center;
-      padding: 15px;
-      gap: 10px;
-    }
-    input[type="text"] {
-      flex: 1;
-      padding: 12px;
-      border-radius: 8px;
-      border: none;
+
+    input, button {
+      padding: 10px;
       font-size: 16px;
-      outline: none;
-      background-color: #21262d;
-      color: #e0e0e0;
     }
+
     button {
-      padding: 12px 18px;
-      background-color: #2ea043;
+      background: #2d6a4f;
       color: white;
       border: none;
-      border-radius: 8px;
-      font-size: 16px;
       cursor: pointer;
+      border-radius: 6px;
     }
-    a {
-      color: #58a6ff;
-      text-decoration: underline;
+
+    .thinking {
+      font-style: italic;
+      color: gray;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0.5; }
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>EcoMind 🌍 AI Assistant</h1>
-    <p>Helping you with world knowledge — the eco-friendly way 🌱</p>
-  </header>
-
-  <div id="chat"></div>
-
-  <div id="input-box">
+  <div class="chat-container">
+    <h2>🌱 Eco AI Assistant</h2>
+    <div class="chat-box" id="chatBox"></div>
     <input type="text" id="userInput" placeholder="Ask me anything..." />
     <button onclick="sendMessage()">Send</button>
   </div>
 
   <script>
-    const chatBox = document.getElementById('chat');
+    const apiKey = "AIzaSyDvuF4B20xu-2_lTjhuYlq1BeCPLGMA93M"; // ✅ Your API Key
 
-    async function sendMessage() {
-      const input = document.getElementById('userInput');
-      const userMessage = input.value.trim();
-      if (!userMessage) return;
+    const chatBox = document.getElementById("chatBox");
 
-      appendMessage(userMessage, 'user');
-      input.value = '';
-
-      appendMessage("💭 Thinking...", 'ai');
-
-      const aiReply = await fetchGeminiResponse(userMessage);
-      const googleLink = generateGoogleSearchLink(userMessage);
-
-      updateLastAIMessage(`${aiReply}<br><br>🌐 <a href="${googleLink}" target="_blank">Search on Google</a>`);
-    }
-
-    function appendMessage(text, type) {
-      const msg = document.createElement('div');
-      msg.className = `message ${type}`;
-      msg.innerHTML = text;
-      chatBox.appendChild(msg);
+    function appendMessage(message, sender) {
+      const div = document.createElement("div");
+      div.className = `message ${sender}`;
+      div.innerText = message;
+      chatBox.appendChild(div);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function updateLastAIMessage(text) {
-      const messages = document.querySelectorAll('.ai');
-      if (messages.length > 0) {
-        messages[messages.length - 1].innerHTML = text;
-      }
-    }
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const text = input.value.trim();
+      if (!text) return;
 
-    async function fetchGeminiResponse(userInput) {
-      const apiKey = "AIzaSyDvuF4B20xu-2_lTjhuYlq1BeCPLGMA93M"; // Your Gemini API key
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+      appendMessage("You: " + text, "user");
+      appendMessage("Thinking...", "bot");
+      input.value = "";
 
-      try {
-        const response = await fetch(url, {
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + apiKey,
+        {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: userInput }] }]
-          })
-        });
-
-        const data = await response.json();
-        console.log("Gemini response:", data);
-
-        if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-          return data.candidates[0].content.parts[0].text;
-        } else if (data?.promptFeedback?.blockReason) {
-          return "❌ Blocked by Gemini: " + data.promptFeedback.blockReason;
-        } else {
-          return "❌ No valid reply received from Gemini.";
+            contents: [{ parts: [{ text }] }]
+          }),
         }
+      );
 
-      } catch (err) {
-        console.error("API error:", err);
-        return "⚠️ API Error: " + err.message;
+      const data = await response.json();
+      const lastMsg = document.querySelector(".bot:last-child");
+      if (data.candidates && data.candidates.length > 0) {
+        lastMsg.innerText = "AI: " + data.candidates[0].content.parts[0].text;
+      } else {
+        lastMsg.innerText = "❌ No valid response received from Gemini.";
       }
     }
-
-    function generateGoogleSearchLink(query) {
-      return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-    }
   </script>
-
 </body>
 </html>
